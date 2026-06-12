@@ -1,7 +1,5 @@
 <?php
 
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\SocialiteController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\BoardController;
@@ -9,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PostCommentController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostVoteController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Webhooks\StripeWebhookController;
 use App\Models\Board;
 use App\Models\Post;
@@ -49,17 +48,9 @@ Route::get('/', function () {
 });
 
 Route::middleware('guest')->group(function (): void {
-    Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
-    Route::post('/register', [RegisteredUserController::class, 'store']);
-    Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
-    Route::post('/login', [AuthenticatedSessionController::class, 'store']);
     Route::get('/auth/{provider}/redirect', [SocialiteController::class, 'redirect'])->name('oauth.redirect');
     Route::get('/auth/{provider}/callback', [SocialiteController::class, 'callback'])->name('oauth.callback');
 });
-
-Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
-    ->middleware('auth')
-    ->name('logout');
 
 Route::middleware(['auth'])->group(function (): void {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
@@ -72,6 +63,12 @@ Route::middleware(['auth'])->group(function (): void {
 
     Route::get('/settings/billing', [BillingController::class, 'index'])->name('billing.index');
     Route::post('/settings/billing/checkout', [BillingController::class, 'checkout'])->name('billing.checkout');
+
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 Route::post('/webhooks/stripe', [StripeWebhookController::class, 'handle'])->name('webhooks.stripe');
+
+require __DIR__.'/auth.php';
